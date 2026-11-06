@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ch2.1 Water Cycle - Revision App</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#e0f7fa">
+    <style>
+        :root {
+            --primary: #0288d1;
+            --primary-light: #e1f5fe;
+            --secondary: #00acc1;
+            --background: #f5f9fb;
+            --text-dark: #333333;
+            --text-light: #ffffff;
+            --success: #43a047;
+            --danger: #e53935;
+            --anime-magenta: #d81b60;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--text-light);
+            padding: 1rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        nav button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        nav button.active {
+            background: white;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        main {
+            padding: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            min-height: 80vh;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Notes Section */
+        .note-card {
+            background: white;
+            padding: 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--primary);
+        }
+
+        .zh-note {
+            color: #666;
+            font-size: 0.9rem;
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 4px;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Vocab Section */
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .vocab-card {
+            background: white;
+            height: 120px;
+            perspective: 1000px;
+            cursor: pointer;
+            border-radius: 12px;
+        }
+
+        .vocab-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-radius: 12px;
+        }
+
+        .vocab-card.flipped .vocab-inner {
+            transform: rotateY(180deg);
+        }
+
+        .vocab-front, .vocab-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+            padding: 0.5rem;
+        }
+
+        .vocab-front {
+            background-color: white;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.1rem;
+            border: 2px solid var(--primary-light);
+        }
+
+        .vocab-back {
+            background-color: var(--primary-light);
+            color: var(--text-dark);
+            transform: rotateY(180deg);
+            font-size: 1rem;
+        }
+
+        /* Quiz Section */
+        .quiz-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+            background: var(--background);
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary-light);
+            background: var(--primary-light);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .option-btn.correct {
+            background: #e8f5e9;
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .option-btn.wrong {
+            background: #ffebee;
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .explanation {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .action-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #0277bd;
+        }
+
+        /* Progress Section */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .danger-btn {
+            background: white;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+
+        /* Anime Element */
+        .jojo-effect {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--anime-magenta);
+            text-shadow: 2px 2px 0px #fff, -2px -2px 0px #fff, 4px 4px 0px #000;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-style: italic;
+        }
+
+        .jojo-effect.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            animation: shake 0.5s infinite;
+        }
+
+        .mini-jojo {
+            display: inline-block;
+            font-weight: bold;
+            color: var(--anime-magenta);
+            margin-left: 10px;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            25% { transform: translate(-52%, -48%) scale(1) rotate(-2deg); }
+            50% { transform: translate(-48%, -52%) scale(1) rotate(2deg); }
+            75% { transform: translate(-52%, -52%) scale(1) rotate(-2deg); }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        }
+
+        @media (min-width: 600px) {
+            header h1 { font-size: 1.5rem; }
+            .vocab-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>💧 Ch2.1 Water Cycle</h1>
+        <nav>
+            <button onclick="nav('notes')" id="btn-notes" class="active">Key Concepts</button>
+            <button onclick="nav('vocab')" id="btn-vocab">Vocabulary</button>
+            <button onclick="nav('quiz')" id="btn-quiz">Quiz</button>
+            <button onclick="nav('mistakes')" id="btn-mistakes">Review Mistakes</button>
+            <button onclick="nav('progress')" id="btn-progress">Progress</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Key Concepts Section -->
+        <section id="notes" class="section active">
+            <h2>Key Concepts (重點筆記)</h2>
+            
+            <div class="note-card">
+                <h3>1. Physical States of Water <span class="zh-note">水的物理狀態</span></h3>
+                <p>Water exists in three states:</p>
+                <ul>
+                    <li><span class="highlight">Solid (固體)</span>: Ice (冰)</li>
+                    <li><span class="highlight">Liquid (液體)</span>: Water (水)</li>
+                    <li><span class="highlight">Gas (氣體)</span>: Water vapour (水汽) or Steam (水蒸氣)</li>
+                </ul>
+            </div>
+
+            <div class="note-card">
+                <h3>2. Changes in States <span class="zh-note">狀態改變</span></h3>
+                <ul>
+                    <li><strong>Melting <span class="zh-note">熔化</span>:</strong> Solid → Liquid. Absorbs energy <span class="zh-note">吸收能量</span>. Melting point of ice is 0 °C.</li>
+                    <li><strong>Freezing <span class="zh-note">凝固</span>:</strong> Liquid → Solid. Releases energy <span class="zh-note">釋出能量</span>. Freezing point of water is 0 °C.</li>
+                    <li><strong>Boiling <span class="zh-note">沸騰</span>:</strong> Liquid → Gas. Takes place at a fixed boiling point <span class="zh-note">沸點</span> (100 °C). Absorbs energy.</li>
+                    <li><strong>Evaporation <span class="zh-note">蒸發</span>:</strong> Liquid → Gas. Takes place at <em>any temperature</em>. Occurs only on the surface. Absorbs energy (e.g. sweating keeps us cool).</li>
+                    <li><strong>Condensation <span class="zh-note">凝結</span>:</strong> Gas → Liquid. Releases energy. E.g. water vapour turns into water droplets when touching a cold surface.</li>
+                </ul>
+                <p><em>Note: Steam is invisible <span class="zh-note">看不見的</span>. The 'white mist' above boiling water is actually tiny condensed water droplets.</em></p>
+            </div>
+
+            <div class="note-card">
+                <h3>3. The Water Cycle <span class="zh-note">水循環</span></h3>
+                <p>Water on Earth keeps changing states. The total amount of water is kept constant.</p>
+                <ol>
+                    <li><strong>Evaporation:</strong> Energy from the Sun powers the cycle. Water evaporates to water vapour.</li>
+                    <li>Warm air carries water vapour upwards.</li>
+                    <li><strong>Condensation:</strong> Colder upper air cools the vapour. It condenses into water droplets, forming clouds.</li>
+                    <li>Water droplets grow heavy and fall as rain, snow, or hail <span class="zh-note">冰雹</span>.</li>
+                </ol>
+            </div>
+
+            <div class="note-card">
+                <h3>4. Rate of Evaporation <span class="zh-note">蒸發速率</span></h3>
+                <p>The rate of evaporation increases when:</p>
+                <ul>
+                    <li>The temperature is <span class="highlight">higher</span>.</li>
+                    <li>The humidity <span class="zh-note">濕度</span> is <span class="highlight">lower</span>.</li>
+                    <li>There is <span class="highlight">more</span> airflow.</li>
+                    <li>The surface area exposed is <span class="highlight">larger</span>.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Vocabulary Section -->
+        <section id="vocab" class="section">
+            <h2>Vocabulary Cards (生字卡)</h2>
+            <p style="margin-bottom: 1rem; color: #666; font-size: 0.9rem;">Tap a card to flip it and see the Chinese meaning. (點擊卡片翻面)</p>
+            <div class="vocab-grid" id="vocab-container">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quiz" class="section">
+            <h2>Quiz (測驗)</h2>
+            <div id="quiz-intro">
+                <p>Test your knowledge based on Ch2.1! There are 10 multiple-choice questions.</p>
+                <button class="action-btn" onclick="startQuiz('normal')">Start Quiz</button>
+            </div>
+            
+            <div id="quiz-area" class="quiz-container" style="display: none;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; color: #666;">
+                    <span id="q-counter">Question 1/10</span>
+                    <span id="score-counter">Score: 0</span>
+                </div>
+                <div id="question-text" class="question-text"></div>
+                <div id="options-area"></div>
+                <div id="explanation-area" class="explanation"></div>
+                <button id="next-q-btn" class="action-btn" style="display: none;" onclick="nextQuestion()">Next Question</button>
+            </div>
+
+            <div id="quiz-result" class="quiz-container" style="display: none; text-align: center;">
+                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Quiz Finished!</h3>
+                <div class="stat-card" style="margin-bottom: 1rem;">
+                    <div class="value" id="final-score">0/10</div>
+                    <div>Your Score</div>
+                </div>
+                <p id="result-message" style="margin-bottom: 1rem; font-weight: bold;"></p>
+                <button class="action-btn" onclick="nav('progress')">View Progress</button>
+                <button class="action-btn" style="background: #666; margin-top: 10px;" onclick="startQuiz('normal')">Try Again</button>
+            </div>
+        </section>
+
+        <!-- Mistakes Section -->
+        <section id="mistakes" class="section">
+            <h2>Review Mistakes (錯題重溫)</h2>
+            <div class="note-card">
+                <p id="mistakes-info">You haven't made any mistakes yet! Keep up the good work!</p>
+                <button id="start-mistakes-btn" class="action-btn" style="display: none;" onclick="startQuiz('mistakes')">Review Wrong Questions</button>
+            </div>
+        </section>
+
+        <!-- Progress Section -->
+        <section id="progress" class="section">
+            <h2>Your Progress (學習進度)</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="value" id="stat-attempts">0</div>
+                    <div>Quizzes Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="stat-highscore">0</div>
+                    <div>Highest Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="stat-recent">0</div>
+                    <div>Recent Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="stat-mistakes">0</div>
+                    <div>Questions to Review</div>
+                </div>
+            </div>
+            <button class="action-btn danger-btn" onclick="resetProgress()">Reset All Progress (清除紀錄)</button>
+        </section>
+    </main>
+
+    <div id="anime-effect" class="jojo-effect">ゴゴゴゴ<br>Perfect!</div>
+
+    <script>
+        // Data
+        const vocabulary = [
+            { en: "Solid", zh: "固體" },
+            { en: "Liquid", zh: "液體" },
+            { en: "Gas", zh: "氣體" },
+            { en: "Water vapour", zh: "水汽" },
+            { en: "Melting", zh: "熔化" },
+            { en: "Melting point", zh: "熔點" },
+            { en: "Freezing", zh: "凝固" },
+            { en: "Freezing point", zh: "凝固點" },
+            { en: "Boiling", zh: "沸騰" },
+            { en: "Evaporation", zh: "蒸發" },
+            { en: "Condensation", zh: "凝結" },
+            { en: "Absorb", zh: "吸收 (能量)" },
+            { en: "Release", zh: "釋出 (能量)" },
+            { en: "Water cycle", zh: "水循環" },
+            { en: "Humidity", zh: "濕度" }
+        ];
+
+        const allQuestions = [
+            {
+                id: 1,
+                q: "What is the physical state of water vapour?",
+                opts: ["Solid", "Liquid", "Gas", "Plasma"],
+                ans: 2,
+                exp: "Water vapour is the gas state of water."
+            },
+            {
+                id: 2,
+                q: "At what temperature does ice melt?",
+                opts: ["100 °C", "0 °C", "50 °C", "It depends on humidity"],
+                ans: 1,
+                exp: "The melting point of ice is fixed at 0 °C."
+            },
+            {
+                id: 3,
+                q: "Which process absorbs energy from the surroundings?",
+                opts: ["Freezing", "Condensation", "Evaporation", "Cooling"],
+                ans: 2,
+                exp: "Evaporation absorbs energy. Freezing and condensation release energy."
+            },
+            {
+                id: 4,
+                q: "Which of the following describes evaporation correctly?",
+                opts: ["It happens only at 100 °C.", "It changes water from gas to liquid.", "It happens at any temperature.", "It releases energy to the surroundings."],
+                ans: 2,
+                exp: "Unlike boiling, evaporation can take place at any temperature."
+            },
+            {
+                id: 5,
+                q: "What is the 'white mist' that forms above boiling water?",
+                opts: ["Invisible steam", "Tiny water droplets", "Smoke", "Water vapour"],
+                ans: 1,
+                exp: "Steam and water vapour are invisible. The 'white mist' is actually tiny water droplets formed by condensation."
+            },
+            {
+                id: 6,
+                q: "Where does the energy that powers the water cycle come from?",
+                opts: ["The Earth's core", "The Moon", "The Sun", "Wind"],
+                ans: 2,
+                exp: "Energy from the Sun powers the water cycle by causing evaporation."
+            },
+            {
+                id: 7,
+                q: "How does water vapour form clouds high in the sky?",
+                opts: ["By freezing into ice blocks", "By condensing into water droplets", "By evaporating into more gas", "By boiling in the upper sky"],
+                ans: 1,
+                exp: "Higher in the sky, colder air cools the water vapour and it condenses to form water droplets (clouds)."
+            },
+            {
+                id: 8,
+                q: "Which condition will INCREASE the rate of evaporation?",
+                opts: ["Higher humidity", "Lower temperature", "Less airflow", "Larger surface area exposed"],
+                ans: 3,
+                exp: "Evaporation is faster when surface area is larger, humidity is lower, temperature is higher, and airflow is more."
+            },
+            {
+                id: 9,
+                q: "Why do we feel cold when we get out of the water after swimming?",
+                opts: ["Water on our skin absorbs energy as it evaporates.", "Water on our skin releases energy.", "Water freezes on our skin.", "Our body stops producing heat."],
+                ans: 0,
+                exp: "As water evaporates from our skin, it absorbs energy from our bodies, producing a cooling effect."
+            },
+            {
+                id: 10,
+                q: "Does the water cycle change the total amount of water on Earth?",
+                opts: ["Yes, water is constantly lost to space.", "Yes, the amount of water keeps increasing.", "No, the total amount of water is kept constant.", "No, but water stops moving eventually."],
+                ans: 2,
+                exp: "The water cycle keeps the total amount of water on Earth constant by continuously recycling it."
+            }
+        ];
+
+        // State variables
+        let userData = {
+            attempts: 0,
+            highestScore: 0,
+            recentScore: 0,
+            mistakes: [] // Array of question IDs
+        };
+        let currentQuizMode = 'normal'; // 'normal' or 'mistakes'
+        let currentQuestionIndex = 0;
+        let currentQuizQuestions = [];
+        let currentScore = 0;
+
+        // Initialization
+        function init() {
+            loadData();
+            renderVocab();
+            updateProgressUI();
+            updateMistakesUI();
+        }
+
+        // Navigation
+        function nav(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(sectionId).classList.add('
